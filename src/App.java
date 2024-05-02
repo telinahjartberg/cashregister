@@ -1,5 +1,4 @@
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class App {
 
@@ -19,7 +18,9 @@ public class App {
   public static void main(String[] args) throws Exception {
     int noOfItems = 0;
     int[] array = new int[5];
-    int[][] array2d = new int[100][3];
+    int[][] items = new int[100][3];
+    int[][] sales = new int[100][3];
+    Date[] salesDate = new Date[100];
     while (true) {
       System.out.println("1. Insert items");
       System.out.println("2. Remove items");
@@ -36,57 +37,52 @@ public class App {
         int input = scanner.nextInt();
         if (input >= 1 && input <= 6) {
           switch (input) {
-            case (one):
+            case one:
               System.out.println("How many items do you want to add");
               Scanner inputOne = new Scanner(System.in);
               if (inputOne.hasNextInt()) {
                 noOfItems = inputOne.nextInt();
-                insertItems(array2d, ITEM_COUNT, noOfItems);
+                insertItems(items, ITEM_COUNT, noOfItems);
                 ITEM_COUNT += noOfItems;
               } else {
                 System.out.println("Wrong input bitchies");
               }
 
               break;
-            case (two):
+            case two:
               System.out.println("Specify item to remove");
               Scanner inputTwo = new Scanner(System.in);
               if (inputTwo.hasNextInt()) {
                 int itemId = inputTwo.nextInt();
-                removeItem(array2d, itemId);
+                removeItem(items, itemId);
               } else {
                 System.out.println("Wrong input bitchies");
               }
 
               break;
-            case (three):
-              printItems(array2d);
+            case three:
+              printItems(items);
               break;
-            case (four):
+            case four:
               System.out.println("Enter item ID and number to be sold");
-              Scanner inputThree = new Scanner(System.in);
-              if (inputThree.hasNextInt()) {
-                if (ITEM_ID) {
-                  System.out.println("Cannot be found");
-                  break;
-                } else if (ITEM_ID) {
-                  System.out.println("Failed to sell bc no space");
+              Scanner inputFour = new Scanner(System.in);
+              if (inputFour.hasNextInt()) {
+                int itemId = inputFour.nextInt();
+                if (inputFour.hasNextInt()) {
+                  int amount = inputFour.nextInt();
+                  sellItem(sales, salesDate, items, itemId, amount);
                 } else {
-                  System.out.println("Yaaaay, success");
+                  System.out.println("Wrong input");
                 }
               } else {
                 System.out.println("Wrong input bitchies");
               }
               break;
-            case (five):
-              System.out.println(
-                "List with item number, count, total price and date modified"
-              );
+            case five:
+              printSales(sales, salesDate);
               break;
-            case (six):
-              System.out.println(
-                "Sorted list with item number, count, total price and date modified"
-              );
+            case six:
+              sortedTable(sales, salesDate);
               break;
           }
         } else {
@@ -135,9 +131,9 @@ public class App {
     }
   }
 
-  public static boolean checkFull(final int[][] array2d, final int noOfItems) {
-    for (int i = 0; i < array2d.length; i++) {
-      if (array2d[i][0] == 0) {
+  public static boolean checkFull(final int[][] items, final int noOfItems) {
+    for (int i = 0; i < items.length; i++) {
+      if (items[i][0] == 0) {
         return true;
       }
     }
@@ -150,9 +146,78 @@ public class App {
       items[index][0] = 0;
       items[index][1] = 0;
       items[index][2] = 0;
+      System.out.println("Successfully removed item " + itemId);
       return index;
+    } else {
+      System.out.println("Could not find item " + itemId);
     }
 
     return -1;
+  }
+
+  public static int sellItem(
+    final int[][] sales,
+    final Date[] salesDate,
+    final int[][] items,
+    final int itemIdToSell,
+    final int amountToSell
+  ) {
+    int index = itemIdToSell - 1000;
+    if (items[index][0] == itemIdToSell) {
+      if (items[index][1] >= amountToSell) {
+        items[index][1] -= amountToSell; // update item count
+        for (int i = 0; i < sales.length; i++) {
+          if (sales[i][0] == 0) {
+            sales[i][0] = itemIdToSell; // item number
+            sales[i][1] = amountToSell; // item count
+            sales[i][2] = items[index][2] * amountToSell; // total price
+            salesDate[i] = new Date(); // date modified
+            break;
+          }
+        }
+
+        System.out.println(
+          "Sold " + amountToSell + " units of item " + itemIdToSell
+        );
+      } else {
+        System.out.println(
+          "failed to sell specified amount, only " +
+          items[index][1] +
+          " units are available"
+        );
+      }
+    } else {
+      System.out.println("Could not find item " + itemIdToSell);
+    }
+
+    return 0;
+  }
+
+  public static void printSales(final int[][] sales, final Date[] salesDate) {
+    for (int i = 0; i < sales.length; i++) {
+      if (sales[i][0] != 0) {
+        System.out.print(sales[i][0] + "    ");
+        System.out.print(sales[i][1] + "    ");
+        System.out.print(sales[i][2] + "    ");
+        System.out.print(salesDate[i]);
+        System.out.println();
+      }
+    }
+  }
+
+  public static void sortedTable(final int[][] sales, final Date[] salesDate) {
+    //bubble sort
+    for (int i = 0; i < sales.length; i++) {
+      for (int j = 0; j < sales.length - i - 1; j++) {
+        if (sales[j][0] > sales[j + 1][0]) {
+          int temp = sales[j][0];
+          sales[j][0] = sales[j + 1][0];
+          sales[j + 1][0] = temp;
+          Date tempDate = salesDate[j];
+          salesDate[j] = salesDate[j + 1];
+          salesDate[j + 1] = tempDate;
+        }
+      }
+    }
   }
 }
